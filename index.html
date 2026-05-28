@@ -3,7 +3,8 @@
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{background:#000;min-height:100vh;width:100%}
-#app{font-family:'Share Tech Mono',monospace;background:#000;color:#00ff41;padding:12px;border:1px solid #005c18;width:100%;min-height:100vh}
+#app{font-family:'Share Tech Mono',monospace;background:#000;color:#00ff41;padding:12px;width:100%;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+#inner{width:100%;max-width:900px}
 #titlebar{font-family:'VT323',monospace;font-size:clamp(18px,4vw,28px);color:#00ff41;border-bottom:1px solid #005c18;padding-bottom:6px;margin-bottom:8px;letter-spacing:2px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px}
 #titlebar span{font-size:clamp(10px,2vw,13px);color:#005c18;font-family:'Share Tech Mono',monospace;letter-spacing:1px}
 #statusbar{display:flex;gap:12px;font-size:clamp(11px,2.5vw,13px);color:#005c18;margin-bottom:8px;border:1px solid #005c18;padding:4px 8px;flex-wrap:wrap}
@@ -12,7 +13,7 @@ html,body{background:#000;min-height:100vh;width:100%}
 .btn{font-family:'Share Tech Mono',monospace;font-size:clamp(10px,2.2vw,12px);background:#000;color:#005c18;border:1px solid #005c18;padding:4px 8px;cursor:pointer;letter-spacing:1px;transition:all 0.1s;white-space:nowrap}
 .btn:hover,.btn.active{color:#00ff41;border-color:#00ff41}
 #controls{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
-#grid-wrap{width:100%;overflow:auto;-webkit-overflow-scrolling:touch}
+#grid-wrap{width:100%;display:flex;justify-content:center;overflow:auto;-webkit-overflow-scrolling:touch}
 #grid{display:inline-grid;border:1px solid #005c18;gap:0;touch-action:none}
 .cell{display:flex;align-items:center;justify-content:center;border:1px solid #001500;cursor:pointer;font-family:'Share Tech Mono',monospace;transition:background 0.05s;line-height:1}
 .cell.hidden{background:#001a07;color:#005c18}
@@ -27,27 +28,29 @@ html,body{background:#000;min-height:100vh;width:100%}
 </style>
 
 <div id="app">
-  <div id="titlebar">
-    <span style="color:#00ff41;font-family:'VT323',monospace;font-size:inherit">&#9556;&#9552; MINESWEEPER.EXE &#9552;&#9559;</span>
-    <span>RIGHT-CLICK / LONG-PRESS = FLAG</span>
+  <div id="inner">
+    <div id="titlebar">
+      <span style="color:#00ff41;font-family:'VT323',monospace;font-size:inherit">&#9556;&#9552; Sweep the Mines &#9552;&#9559;</span>
+      <span>RIGHT-CLICK / LONG-PRESS = FLAG</span>
+    </div>
+    <div class="diff-btns">
+      <button class="btn active" id="d-easy" onclick="setDiff('easy')">[EASY 9x9]</button>
+      <button class="btn" id="d-med" onclick="setDiff('med')">[MED 16x16]</button>
+      <button class="btn" id="d-hard" onclick="setDiff('hard')">[HARD 16x30]</button>
+    </div>
+    <div id="statusbar">
+      <span>MINES:<span class="val" id="mine-count"> --</span></span>
+      <span>FLAGS:<span class="val" id="flag-count"> 0</span></span>
+      <span>TIME:<span class="val" id="timer"> 000</span>s</span>
+      <span>STATUS:<span class="val" id="status-txt"> READY</span></span>
+    </div>
+    <div id="controls">
+      <button class="btn" onclick="newGame()">[NEW GAME]</button>
+      <button class="btn" onclick="revealAll()">[REVEAL]</button>
+    </div>
+    <div id="grid-wrap"><div id="grid"></div></div>
+    <div id="msg" class="info">&gt; Click any cell to begin. Right-click / long-press to flag.</div>
   </div>
-  <div class="diff-btns">
-    <button class="btn active" id="d-easy" onclick="setDiff('easy')">[EASY 9x9]</button>
-    <button class="btn" id="d-med" onclick="setDiff('med')">[MED 16x16]</button>
-    <button class="btn" id="d-hard" onclick="setDiff('hard')">[HARD 16x30]</button>
-  </div>
-  <div id="statusbar">
-    <span>MINES:<span class="val" id="mine-count"> --</span></span>
-    <span>FLAGS:<span class="val" id="flag-count"> 0</span></span>
-    <span>TIME:<span class="val" id="timer"> 000</span>s</span>
-    <span>STATUS:<span class="val" id="status-txt"> READY</span></span>
-  </div>
-  <div id="controls">
-    <button class="btn" onclick="newGame()">[NEW GAME]</button>
-    <button class="btn" onclick="revealAll()">[REVEAL]</button>
-  </div>
-  <div id="grid-wrap"><div id="grid"></div></div>
-  <div id="msg" class="info">&gt; Click any cell to begin. Right-click / long-press to flag.</div>
 </div>
 
 <script>
@@ -55,11 +58,11 @@ const DIFFS={easy:{rows:9,cols:9,mines:10},med:{rows:16,cols:16,mines:40},hard:{
 let diff='easy',rows,cols,mines,board,revealed,flagged,gameOver,gameWon,started,timerInterval,seconds,firstClick;
 
 function cellSize(){
-  const wrap=document.getElementById('grid-wrap');
-  const avail=wrap.clientWidth-2;
+  const inner=document.getElementById('inner');
+  const avail=inner.clientWidth-2;
   const D=DIFFS[diff];
   const fit=Math.floor(avail/D.cols);
-  return Math.max(20,Math.min(fit,36));
+  return Math.max(20,Math.min(fit,40));
 }
 
 function setDiff(d){
@@ -79,8 +82,7 @@ function newGame(){
   document.getElementById('mine-count').textContent=' '+mines;
   document.getElementById('flag-count').textContent=' 0';
   document.getElementById('timer').textContent=' 000';
-  const st=document.getElementById('status-txt');
-  st.textContent=' READY';st.style.color='';
+  const st=document.getElementById('status-txt');st.textContent=' READY';st.style.color='';
   setMsg('&gt; Click any cell to begin. Right-click / long-press to flag.','info');
   renderGrid();
 }
